@@ -1,0 +1,10 @@
+diff --git a/src/makefiles/Makefile.linux b/src/makefiles/Makefile.linux
+index 645f73aa2b..e968d44a3a 100644
+--- a/src/makefiles/Makefile.linux
++++ b/src/makefiles/Makefile.linux
+@@ -1,4 +1,4 @@
+-AROPT = crs
++AROPT = rsT
+
+ export_dynamic = -Wl,-E
+ # Use --enable-new-dtags to generate DT_RUNPATH instead of DT_RPATH.

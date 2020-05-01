@@ -5,7 +5,7 @@ index b03d5e510f..8c8c53c3b8 100644
 @@ -37,8 +37,21 @@ LOCALOBJS += utils/probes.o
  endif
  endif
- 
+
 +LOCALOBJS += mock.o
 +
  OBJS = $(SUBDIROBJS) $(LOCALOBJS) $(top_builddir)/src/port/libpgport_srv.a \
@@ -21,20 +21,20 @@ index b03d5e510f..8c8c53c3b8 100644
 +# Readd specific things excluded before
 +PGLIBOBJS += commands/define.o
 +
- 
+
  # We put libpgport and libpgcommon into OBJS, so remove it from LIBS; also add
  # libldap and ICU
 @@ -53,14 +66,22 @@ endif
- 
+
  ##########################################################################
- 
+
 -all: submake-libpgport submake-catalog-headers submake-utils-headers postgres $(POSTGRES_IMP)
 +all: submake-libpgport submake-catalog-headers submake-utils-headers $(POSTGRES_IMP)
- 
+
  ifneq ($(PORTNAME), cygwin)
  ifneq ($(PORTNAME), win32)
  ifneq ($(PORTNAME), aix)
- 
+
 -postgres: $(OBJS)
 -	touch $@
 +../pl/plpgsql/src/%.o:
@@ -47,13 +47,13 @@ index b03d5e510f..8c8c53c3b8 100644
 +
 +pglib.a: $(PGLIBOBJS)
 +	$(AR) rT $@ $(call expand_subsys,$^)
- 
+
  endif
  endif
 @@ -71,6 +93,7 @@ ifeq ($(PORTNAME), cygwin)
  postgres: $(OBJS)
  	$(CC) $(CFLAGS) $(call expand_subsys,$^) $(LDFLAGS) $(LDFLAGS_EX) $(export_dynamic) -Wl,--stack,$(WIN32_STACK_RLIMIT) -Wl,--export-all-symbols -Wl,--out-implib=libpostgres.a $(LIBS) -o $@
- 
+
 +
  # libpostgres.a is actually built in the preceding rule, but we need this to
  # ensure it's newer than postgres; see notes in src/backend/parser/Makefile
@@ -64,12 +64,10 @@ diff --git a/src/pl/plpgsql/src/Makefile b/src/pl/plpgsql/src/Makefile
 @@ -19,8 +19,8 @@
  SHLIB_LINK = $(filter -lintl, $(LIBS))
  rpath =
- 
+
 -OBJS = pl_gram.o pl_handler.o pl_comp.o pl_exec.o \
 -	pl_funcs.o pl_scanner.o $(WIN32RES)
 +OBJS = pl_gram.o pl_handler.o pl_comp.o  \
 +	pl_funcs.o pl_scanner.o plmock.o $(WIN32RES)
- 
- DATA = plpgsql.control plpgsql--1.0.sql plpgsql--unpackaged--1.0.sql
- 
 
+ DATA = plpgsql.control plpgsql--1.0.sql plpgsql--unpackaged--1.0.sql

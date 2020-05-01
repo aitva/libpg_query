@@ -45,7 +45,8 @@ build: $(ARLIB)
 clean:
 	-@ $(RM) $(CLEANLIBS) $(CLEANOBJS) $(EXAMPLES) $(TESTS)
 	-@ $(RM) -rf {test,examples}/*.dSYM
-	#-@ $(RM) -r $(PGDIR) $(PGDIRBZ2)
+	-@ $(RM) -r $(PGDIR)
+	# -@ $(RM) $(PGDIRBZ2)
 
 .PHONY: all clean build examples test
 
@@ -58,6 +59,7 @@ $(PGDIR): $(PGDIRBZ2)
 	cd $(PGDIR); patch -p1 < $(root_dir)/patches/00_disable_targets.patch
 	cd $(PGDIR); patch -p1 < $(root_dir)/patches/01_parse_replacement_char.patch
 	cd $(PGDIR); AR="$(AR)" CFLAGS="$(PG_CFLAGS)" LDFLAGS="$(LDFLAGS)" ./configure $(PG_CONFIGURE_FLAGS)
+	cd $(PGDIR); patch -p1 < $(root_dir)/patches/08_thin_archive.patch
 	cd $(PGDIR); patch -p1 < $(root_dir)/patches/02_visibility_marks.patch
 	cd $(PGDIR); patch -p1 < $(root_dir)/patches/04_mock.patch
 	cd $(PGDIR); patch -p1 < $(root_dir)/patches/05_gen_mriscript.patch
@@ -69,21 +71,21 @@ $(PGDIR): $(PGDIRBZ2)
 	cd $(PGDIR)/contrib/pgcrypto/; make
 	cd $(PGDIR); patch -p1 < $(root_dir)/patches/03_makefiles.patch
 
-
-
-
 $(PGDIR)/src/backend/pglib.a:
 	cd $(PGDIR)/src/backend; make pglib.a
-
 
 libpg_query.so: $(OBJ_FILES)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Wl,--gc-sections -shared $< $(LDFLAGS) -o $@
 
 prepare_pg: $(PGDIR)
 
-.c.o:
+%.o : %.c
 	@$(ECHO) compiling $(<)
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $< $(LDFLAGS)
+
+.depend: $(SRC_FILES)
+	rm -f ./.depend
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MM $^>>./.depend;
 
 $(ARLIB): $(PGDIR) $(OBJ_FILES) Makefile $(PGDIR)/src/backend/pglib.a
 	rm $(ARLIB) -f
